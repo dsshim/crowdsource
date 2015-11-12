@@ -23,11 +23,11 @@ const _ = require('lodash')
 const server = http.listen(PORT, function() {
   console.log("Server is up and running on port: " + PORT)
 });
-
+var questions;
 var votes = {}
 var count = 0;
 // var sessionSocket;
-var currentUser;
+
 // app.configure(function(){
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, 'public')));
@@ -55,11 +55,15 @@ app.get('/voted', function(request, response){
 })
 
 app.get("/poll/:id", function(request, response) {
+  // var userPage = io.of('/poll/'+request.params.id)
+  // userPage.on('connection', function(socket) {
+  //   console.log("voter connected")
+  // })
   client.hgetall(request.params.id, function(err, dbset){
 
     if(dbset.user_url === request.params.id) {
 
-      response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
+      response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
     } else {
       client.hgetall(dbset.admin_user_url, function(err, dbset){
 
@@ -70,11 +74,7 @@ app.get("/poll/:id", function(request, response) {
   })
 })
 
-
-
-
 io.on('connection', function(socket) {
-  count++
   // sessionSocket = socket
   //add currentDate to adminUrl
 
@@ -115,16 +115,19 @@ io.on('connection', function(socket) {
   socket.on("poll", function (message) {
     var userUrlHash = crypto.createHash("md5").update(socket.id+Date.now()).digest("hex");
     var adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
-    currentUser = new User(count,adminUrlHash, userUrlHash)
+    var currentUser = new User(count,adminUrlHash, userUrlHash)
     client.hset(userUrlHash, "question", message.question, redis.print);
     client.hset(userUrlHash, "answer_1",message.answer_1, redis.print);
     client.hset(userUrlHash, "answer_2",message.answer_2, redis.print);
+    client.hset(userUrlHash, "answer_3",message.answer_3, redis.print);
+    client.hset(userUrlHash, "answer_4",message.answer_4, redis.print);
     client.hset(userUrlHash,"answer_1_count", 0, redis.print);
     client.hset(userUrlHash,"answer_2_count", 0, redis.print);
+    client.hset(userUrlHash,"answer_3_count", 0, redis.print);
+    client.hset(userUrlHash,"answer_4_count", 0, redis.print);
     client.hset(userUrlHash,"admin_url", adminUrlHash, redis.print);
     client.hset(userUrlHash, "user_url",userUrlHash, redis.print);
     client.hset(adminUrlHash, "admin_user_url",userUrlHash, redis.print);
-
     // socket.emit("urls", {adminUrl: adminUrlHash, userUrl: userUrlHash})
     console.log(currentUser.url)
     console.log(currentUser.socketId)
@@ -142,8 +145,9 @@ io.on('connection', function(socket) {
 
   socket.on('message', function (channel, message) {
     if (channel === 'voteCast') {
-      votes[socket.id] = message;
-      io.sockets.emit('voteCount', countVotes(votes));
+
+      votes[socket.id] = message.question;
+      io.sockets.emit('voteCount', countVotes(votes,message.questions));
       console.log(votes);
     }
   });
@@ -191,15 +195,16 @@ io.on('connection', function(socket) {
 
 });
 
-function countVotes(votes) {
+function countVotes(votes, questions) {
 
-var voteCount = {
-    A: 0,
-    B: 0,
-    C: 0,
-    D: 0
-};
+
+var voteCount = {};
+_.forEach(questions, function(question) {
+  voteCount[question] = 0
+})
+
 _.forEach(votes, function(vote) {
+
   voteCount[vote]++
 })
 

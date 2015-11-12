@@ -13,9 +13,18 @@ socket.on('usersConnected', function (count) {
   connectionCount.innerText = 'Connected Users: ' + count;
 });
 
-socket.on('voteCount', function (votes) {
-  document.getElementById("vote-results").innerText = "A:"+votes.A+" "+ "B:"+votes.B+" "+ "C:"+votes.C+" "+ "D:"+votes.D
-  console.log(votes);
+socket.on('voteCount', function (data) {
+  // document.getElementById("vote-results").innerText =
+var votes = []
+  for (var key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+        votes.push(key+": "+data[key]+" ")
+        // var val = obj[key];
+        // use val
+    }
+}
+document.getElementById("vote-results").innerText = votes
+
 });
 
 // socket.on("liveVotes", function(data) {
@@ -28,12 +37,19 @@ socket.on('voteCount', function (votes) {
 var buttons = document.querySelectorAll('#choices button');
 
 for (var i = 0; i < buttons.length; i++) {
+
   buttons[i].addEventListener('click', function () {
-    socket.send('voteCast', this.innerText);
+    questions = getQuestions();
+    var currentUrl = window.location.pathname.substr(6)
+    socket.send('voteCast', {question: this.innerText, currentUrl: currentUrl, questions: questions});
     console.log(this.innerText);
   });
 }
 
+function getQuestions() {
+  var questions = [$("#a").text(),$("#b").text(),$("#c").text(),$("#d").text()];
+  return questions
+}
 // $(".vote").on("click", function(event){
 //   console.log("entered vote")
 //   socket.emit("votes", {
@@ -59,7 +75,9 @@ $("#submit").on("click", function(event){
   socket.emit("poll", {
     question: $("#question").val(),
     answer_1: $("#answer-1").val(),
-    answer_2: $("#answer-2").val()
+    answer_2: $("#answer-2").val(),
+    answer_3: $("#answer-3").val(),
+    answer_4: $("#answer-4").val()
   });
 });
 
