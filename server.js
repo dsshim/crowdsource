@@ -3,8 +3,17 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const redis = require('redis');
-const client = redis.createClient(); //creates a new client
+
+if (process.env.REDISTOGO_URL) {
+  var rtg   = require("url").parse(process.env.REDISTOGO_URL);
+  var redis = require("redis").createClient(rtg.port, rtg.hostname);
+
+  redis.auth(rtg.auth.split(":")[1]);
+} else {
+  var redis = require('redis');
+  var client = redis.createClient(); //creates a new client
+}
+
 const bodyParser = require('body-parser');
 const User = require('./user.js')
 var crypto = require('crypto');
