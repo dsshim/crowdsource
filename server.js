@@ -54,34 +54,77 @@ app.get('/voted', function(request, response){
   response.render('voted')
 })
 
-app.get("/poll/:id", function(request, response) {
-  // var userPage = io.of('/poll/'+request.params.id)
-  // userPage.on('connection', function(socket) {
-  //   console.log("voter connected")
-  // })
-  client.hgetall(request.params.id, function(err, dbset){
+// app.get("/poll/:id", function(request, response) {
+//   // var userPage = io.of('/poll/'+request.params.id)
+//   // userPage.on('connection', function(socket) {
+//   //   console.log("voter connected")
+//   // })
+//   client.hgetall(request.params.id, function(err, dbset){
+//
+//     if(dbset.user_url === request.params.id) {
+//
+//       response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
+//     } else {
+//       client.hgetall(dbset.admin_user_url, function(err, dbset){
+//
+//
+//         response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
+//       });
+//     }
+//   })
+//   joinRoom(request.params.id)
+// })
 
-    if(dbset.user_url === request.params.id) {
-
-      response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
-    } else {
-      client.hgetall(dbset.admin_user_url, function(err, dbset){
 
 
-        response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
-      });
-    }
-  })
-})
+// var homePage = io.of('/')
+// homePage.on('connection', function(socket) {
+//   console.log("voter connected")
+// })
 
 io.on('connection', function(socket) {
+
+  app.get("/poll/:id", function(request, response) {
+    // var userPage = io.of('/poll/'+request.params.id)
+    // userPage.on('connection', function(socket) {
+    //   console.log("voter connected")
+    // })
+
+    client.hgetall(request.params.id, function(err, dbset){
+
+      if(dbset.user_url === request.params.id) {
+
+
+        response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
+        // socket.join(dbset.user_url);
+        // console.log(io.sockets.adapter.rooms)
+
+      } else {
+
+        client.hgetall(dbset.admin_user_url, function(err, dbset){
+
+
+          response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
+          // socket.join(dbset.user_url);
+          // console.log(io.sockets.adapter.rooms)
+        });
+
+      }
+    })
+
+  })
+
+  // function joinRoom(id){
+  //   socket.join(id)
+  //   console.log("join voting room")
+  // }
   // sessionSocket = socket
   //add currentDate to adminUrl
 
   // var userUrlHash = crypto.createHash("md5").update(socket.id+Date.now()).digest("hex");
   // var adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
   // currentUser = new User(count,adminUrlHash, userUrlHash)
-  console.log('Someone has connected.', io.engine.clientsCount);
+  console.log('User has connected.'+socket.id, io.engine.clientsCount);
   io.sockets.emit('usersConnected', io.engine.clientsCount);
 
   // app.get("/poll/:id", function(request, response) {
@@ -111,11 +154,13 @@ io.on('connection', function(socket) {
   //   });
   //
   // })
-
+  var userUrlHash;
+  var adminUrlHash;
+  var currentUser;
   socket.on("poll", function (message) {
-    var userUrlHash = crypto.createHash("md5").update(socket.id+Date.now()).digest("hex");
-    var adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
-    var currentUser = new User(count,adminUrlHash, userUrlHash)
+    userUrlHash = crypto.createHash("md5").update(socket.id+Date.now()).digest("hex");
+    adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
+    currentUser = new User(count,adminUrlHash, userUrlHash)
     client.hset(userUrlHash, "question", message.question, redis.print);
     client.hset(userUrlHash, "answer_1",message.answer_1, redis.print);
     client.hset(userUrlHash, "answer_2",message.answer_2, redis.print);
@@ -129,8 +174,9 @@ io.on('connection', function(socket) {
     client.hset(userUrlHash, "user_url",userUrlHash, redis.print);
     client.hset(adminUrlHash, "admin_user_url",userUrlHash, redis.print);
     // socket.emit("urls", {adminUrl: adminUrlHash, userUrl: userUrlHash})
-    console.log(currentUser.url)
-    console.log(currentUser.socketId)
+    console.log(userUrlHash)
+    console.log(adminUrlHash)
+
 
     app.get('/new', function(request, response) {
       // var adminUrl = client.hget(''+User.socketId, "admin-url", function(err, object) {
@@ -138,58 +184,70 @@ io.on('connection', function(socket) {
       //     console.dir(object);
       // });
       // response.render('new')
-      response.render('new' , {userUrl: currentUser.url, adminUrl: currentUser.socketId})
+
+      response.render('new' , {userUrl: userUrlHash, adminUrl: adminUrlHash})
     });
 
   });
 
-  socket.on('message', function (channel, message) {
-    if (channel === 'voteCast') {
-
+  socket.on('voteCast', function (message) {
+    // if (channel === 'voteCast') {
       votes[socket.id] = message.question;
-      io.sockets.emit('voteCount', countVotes(votes,message.questions));
+      io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.questions));
       console.log(votes);
+    // }
+  });
+
+  socket.on('setRooms', function(data) {
+
+    client.hgetall(data.currentUrl, function(err, dbset){
+      if(dbset.user_url === data.currentUrl ){
+      socket.join(dbset.user_url);
+      console.log(io.sockets.adapter.rooms)
+    }else{
+      socket.join(dbset.admin_user_url);
+      console.log(io.sockets.adapter.rooms)
+      // console.log(io.sockets.adapter.rooms)
     }
-  });
-
-
-
-  socket.on("votes", function(message){
-    // console.log("received votes")
-    // var answer1count = client.hgetall(message.currentUrl, function(err, dbset){
-    //   // console.log(dbset)
-    //   // return dbset.question
-    //   // response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
-    //   return dbset.answer_1_count
-    // });
-    client.hgetall(message.currentUrl, function(err, dbset){
-      // console.log(dbset)
-      // return dbset.question
-      // response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
-      // return dbset.answer_1_count+1
-      client.hset(message.currentUrl, message.votedAnswer+"_count", parseInt(dbset.answer_1_count)+1, redis.print);
-    })
-
-
-
-    client.hgetall(message.currentUrl, function(err, dbset){
-      // console.log(dbset)
-      // return dbset.question
-      // response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
-      // return dbset.answer_1_count
-      io.sockets.emit("liveVotes", {
-        votedAnswer: dbset.answer_1_count
-      })
-
-
     });
-  });
+  })
+
+  // socket.on("votes", function(message){
+  //   // console.log("received votes")
+  //   // var answer1count = client.hgetall(message.currentUrl, function(err, dbset){
+  //   //   // console.log(dbset)
+  //   //   // return dbset.question
+  //   //   // response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
+  //   //   return dbset.answer_1_count
+  //   // });
+  //   client.hgetall(message.currentUrl, function(err, dbset){
+  //     // console.log(dbset)
+  //     // return dbset.question
+  //     // response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
+  //     // return dbset.answer_1_count+1
+  //     client.hset(message.currentUrl, message.votedAnswer+"_count", parseInt(dbset.answer_1_count)+1, redis.print);
+  //   })
+  //
+  //
+  //
+  //   client.hgetall(message.currentUrl, function(err, dbset){
+  //     // console.log(dbset)
+  //     // return dbset.question
+  //     // response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
+  //     // return dbset.answer_1_count
+  //     io.sockets.emit("liveVotes", {
+  //       votedAnswer: dbset.answer_1_count
+  //     })
+  //
+  //
+  //   });
+  // });
 
   socket.on('disconnect', function () {
     console.log('A user has disconnected.', io.engine.clientsCount);
-    delete votes[socket.id];
-    console.log(votes);
-    socket.emit('voteCount', countVotes(votes));
+    // delete votes[socket.id];
+    // console.log(votes);
+    // socket.emit('voteCount', countVotes(votes));
     io.sockets.emit('usersConnected', io.engine.clientsCount);
   });
 

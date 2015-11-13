@@ -7,6 +7,15 @@ var socket = io();
 //   $('.user-url').append("http://myURL.com/"+urls.userUrl)
 //
 // });
+
+
+window.onload = function () {
+  if(window.location.pathname.length > 5){
+    socket.emit("setRooms", {currentUrl: window.location.pathname.substr(6)})
+  }
+}
+
+
 var connectionCount = document.getElementById('connection-count');
 
 socket.on('usersConnected', function (count) {
@@ -41,7 +50,7 @@ for (var i = 0; i < buttons.length; i++) {
   buttons[i].addEventListener('click', function () {
     questions = getQuestions();
     var currentUrl = window.location.pathname.substr(6)
-    socket.send('voteCast', {question: this.innerText, currentUrl: currentUrl, questions: questions});
+    socket.emit('voteCast', {question: this.innerText, currentUrl: currentUrl, questions: questions});
     console.log(this.innerText);
   });
 }
