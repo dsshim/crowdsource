@@ -6,4 +6,5 @@ function User(userId, socketId, url) {
   }
 
 
+
 module.exports = User;

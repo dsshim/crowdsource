@@ -24,17 +24,35 @@ socket.on('usersConnected', function (count) {
 
 socket.on('voteCount', function (data) {
   // document.getElementById("vote-results").innerText =
-var votes = []
+  var votes = []
   for (var key in data) {
     if (Object.prototype.hasOwnProperty.call(data, key)) {
-        votes.push(key+": "+data[key]+" ")
-        // var val = obj[key];
-        // use val
+      votes.push(key+": "+data[key]+" ")
+      // var val = obj[key];
+      // use val
     }
-}
-document.getElementById("vote-results").innerText = votes
+  }
+
+  document.getElementById("vote-results").innerText = votes
 
 });
+
+socket.on('adminVoteCount', function (data) {
+  // document.getElementById("vote-results").innerText =
+  var votes = []
+  for (var key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      votes.push(key+": "+data[key]+" ")
+      // var val = obj[key];
+      // use val
+    }
+  }
+
+  document.getElementById("admin-results").innerText = votes
+
+});
+
+
 
 // socket.on("liveVotes", function(data) {
 //   console.log(data)
@@ -48,16 +66,16 @@ var buttons = document.querySelectorAll('#choices button');
 for (var i = 0; i < buttons.length; i++) {
 
   buttons[i].addEventListener('click', function () {
-    questions = getQuestions();
+    answers = getAnswers();
     var currentUrl = window.location.pathname.substr(6)
-    socket.emit('voteCast', {question: this.innerText, currentUrl: currentUrl, questions: questions});
+    socket.emit('voteCast', {answer: this.innerText, currentUrl: currentUrl, answers: answers, socketId: socket.id});
     console.log(this.innerText);
   });
 }
 
-function getQuestions() {
-  var questions = [$("#a").text(),$("#b").text(),$("#c").text(),$("#d").text()];
-  return questions
+function getAnswers() {
+  var answers = [$("#a").text(),$("#b").text(),$("#c").text(),$("#d").text()];
+  return answers
 }
 // $(".vote").on("click", function(event){
 //   console.log("entered vote")

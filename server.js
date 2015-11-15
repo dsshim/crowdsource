@@ -24,8 +24,15 @@ const server = http.listen(PORT, function() {
   console.log("Server is up and running on port: " + PORT)
 });
 var questions;
-var votes = {}
+
 var count = 0;
+var votes = {}
+var userUrlHash;
+var adminUrlHash;
+var currentUser;
+var voteCount = {};
+var adminVoteCount = {}
+
 // var sessionSocket;
 
 // app.configure(function(){
@@ -74,7 +81,16 @@ app.get('/voted', function(request, response){
 //   })
 //   joinRoom(request.params.id)
 // })
+app.get('/new', function(request, response) {
+  // var adminUrl = client.hget(''+User.socketId, "admin-url", function(err, object) {
+  //   debugger;
+  //     console.dir(object);
+  // });
+  // response.render('new')
 
+
+  response.render('new' , {userUrl: userUrlHash, adminUrl: adminUrlHash})
+});
 
 
 // var homePage = io.of('/')
@@ -102,8 +118,12 @@ io.on('connection', function(socket) {
       } else {
 
         client.hgetall(dbset.admin_user_url, function(err, dbset){
-
-
+          answers = []
+          answers.push(dbset.answer_1)
+          answers.push(dbset.answer_2)
+          answers.push(dbset.answer_3)
+          answers.push(dbset.answer_4)
+          buildAdminVoteHash(answers,dbset.user_url)
           response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
           // socket.join(dbset.user_url);
           // console.log(io.sockets.adapter.rooms)
@@ -111,6 +131,7 @@ io.on('connection', function(socket) {
 
       }
     })
+
 
   })
 
@@ -154,10 +175,10 @@ io.on('connection', function(socket) {
   //   });
   //
   // })
-  var userUrlHash;
-  var adminUrlHash;
-  var currentUser;
+
   socket.on("poll", function (message) {
+
+
     userUrlHash = crypto.createHash("md5").update(socket.id+Date.now()).digest("hex");
     adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
     currentUser = new User(count,adminUrlHash, userUrlHash)
@@ -172,28 +193,36 @@ io.on('connection', function(socket) {
     client.hset(userUrlHash,"answer_4_count", 0, redis.print);
     client.hset(userUrlHash,"admin_url", adminUrlHash, redis.print);
     client.hset(userUrlHash, "user_url",userUrlHash, redis.print);
+    client.hset(userUrlHash, "socketId",socket.id, redis.print);
     client.hset(adminUrlHash, "admin_user_url",userUrlHash, redis.print);
+    createRoomVote()
     // socket.emit("urls", {adminUrl: adminUrlHash, userUrl: userUrlHash})
-    console.log(userUrlHash)
-    console.log(adminUrlHash)
 
+    // var answers = []
+    // answers.push(message.answer_1)
+    // answers.push(message.answer_2)
+    // answers.push(message.answer_3)
+    // answers.push(message.answer_4)
+    // buildVoteHash(answers,userUrlHash, socket.id)
+    // console.log(userUrlHash)
+    // console.log(adminUrlHash)
+    //
+    //
 
-    app.get('/new', function(request, response) {
-      // var adminUrl = client.hget(''+User.socketId, "admin-url", function(err, object) {
-      //   debugger;
-      //     console.dir(object);
-      // });
-      // response.render('new')
-
-      response.render('new' , {userUrl: userUrlHash, adminUrl: adminUrlHash})
-    });
 
   });
 
   socket.on('voteCast', function (message) {
+
     // if (channel === 'voteCast') {
-      votes[socket.id] = message.question;
-      io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.questions));
+    votes[message.currentUrl]={}
+
+
+      votes[message.currentUrl][socket.id] = message.answer;
+
+
+      io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.answers, message.currentUrl, socket.id));
+      io.sockets.in(message.currentUrl).emit('adminVoteCount', countAdminVotes(votes,message.answers, message.currentUrl, socket.id));
       console.log(votes);
     // }
   });
@@ -253,23 +282,98 @@ io.on('connection', function(socket) {
 
 });
 
-function countVotes(votes, questions) {
+
+function buildVoteHash(answers, roomId, socketId) {
+  // voteCount[roomId] = {}
+  // voteCount[roomId][socketId]={}
+  voteCount[roomId] = {}
+  voteCount[roomId][socketId]={}
+
+  _.forEach(answers, function(answer) {
+
+    if(!(answer in voteCount)){
+
+      voteCount[roomId][socketId][answer] = 0
+
+    }
+  })
+
+}
+
+function buildAdminVoteHash(answers, roomId) {
+  // voteCount[roomId] = {}
+  // voteCount[roomId][socketId]={}
+  adminVoteCount[roomId] = {}
+  // voteCount[roomId][socketId]={}
+
+  _.forEach(answers, function(answer) {
+
+    if(!(answer in voteCount)){
+
+      adminVoteCount[roomId][answer] = 0
+
+    }
+  })
+
+}
+
+function countVotes(votes, answers, room, socketId) {
+
+  buildVoteHash(answers,room, socketId)
 
 
-var voteCount = {};
-_.forEach(questions, function(question) {
-  voteCount[question] = 0
-})
+
 
 _.forEach(votes, function(vote) {
 
-  voteCount[vote]++
+
+
+
+
+
+
+  // if(room in votes){
+
+  // voteCount[vote[socketId]]++
+
+  voteCount[room][socketId][vote[socketId]]++
+
+
+
+
+  // client.hset(room, "votes"+socketId, vote[socketId], redis.print);
+
+// }
 })
 
-  // for (vote in votes) {
-  //   voteCount[votes[vote]]++
-  // }
-  return voteCount;
+// var totalVotes = [];
+// socketKey ="votes"+socketId
+// client.hgetall(room, function(err, dbset){
+//
+//   pry = require('pryjs')
+//   eval(pry.it)
+//
+//   totalVotes.push(dbset.socketKey)
+//   // for (vote in votes) {
+//   //   voteCount[votes[vote]]++
+//   // }
+// })
+
+  return voteCount[room][socketId];
+
+}
+
+function countAdminVotes(votes, answers, room, socketId) {
+  _.forEach(votes, function(vote) {
+
+
+  adminVoteCount[room][vote[socketId]]++
+
+  })
+
+    return adminVoteCount[room];
+
+
 }
 module.exports = server;
 // function sendUrl() {
