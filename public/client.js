@@ -13,6 +13,13 @@ socket.on('usersConnected', function (count) {
   connectionCount.innerText = 'Connected Users: ' + count;
 });
 
+socket.on('closePoll', function(){
+  $("a").addClass('hidden');
+  // $('a').disable(true);
+
+  document.getElementById('poll-closed').innerText = "This Poll is Closed!"
+})
+
 socket.on('voteCount', function (data) {
   var votes = []
   for (var key in data) {

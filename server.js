@@ -60,7 +60,7 @@ app.get('/closed', function(request, response) {
 })
 
 io.on('connection', function(socket) {
-
+//nextTick eventLoop
   app.get("/poll/:id", function(request, response) {
     client.hgetall(request.params.id, function(err, dbset){
       if(dbset.user_url === request.params.id) {
@@ -105,7 +105,10 @@ io.on('connection', function(socket) {
     client.hgetall(message.admin_url, function(err, dbset){
 
       client.hset(dbset.admin_user_url, "status", 1, redis.print)
+      io.sockets.in(dbset.admin_user_url).emit('closePoll');
     })
+
+
   })
 
   socket.on("poll", function (message) {
@@ -156,6 +159,7 @@ io.on('connection', function(socket) {
 
 function closePollTimer(url) {
   client.hset(url, "status", 1, redis.print)
+  io.sockets.in(url).emit('closePoll');
 }
 
 
@@ -202,6 +206,8 @@ function countAdminVotes(votes, answers, room, socketId) {
   _.forEach(votes, function(vote) {
     adminVoteCount[room][vote[socketId]]++
   })
+
+  
   return adminVoteCount[room];
 }
 
