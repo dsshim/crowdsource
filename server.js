@@ -24,6 +24,8 @@ const _ = require('lodash')
 const server = http.listen(PORT, function() {
   console.log("Server is up and running on port: " + PORT)
 });
+const renderHomepage = require("./routes.js")
+
 var questions;
 
 var count = 0;
@@ -39,9 +41,11 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
-app.get('/', function(request, response) {
-  response.sendFile(__dirname + '/public/index.html')
-});
+// app.get('/', function(request, response) {
+//   response.sendFile(__dirname + '/public/index.html')
+// });
+
+app.get('/', renderHomepage);
 
 app.get('/voted', function(request, response){
   response.render('voted')
@@ -205,4 +209,4 @@ function closePoll(userUrl) {
   client.hset(userUrl, "status", 1, redis.print)
 }
 
-module.exports = server;
+module.exports = app;
