@@ -8,21 +8,46 @@
   <link rel='stylesheet' href='/base.css' />
   <title>Vote Now!</title>
 </head>
-<body class>
-  <div class = "container">
+<body class = "custom">
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+
+    <div class="container navbar-title">
+
+       <div class="navbar-header">
+
+       </div>
+
+       <div class = "menu">
+         <ul class="nav navbar-nav">
+           <a  href="/">crowdSource</a>
+         </ul>
+       </div>
+     </div>
+
+
+
+</nav>
+  <div class = "container user-page">
 
     <div class ="row">
-      <div class = "col-md-12">
-        Question: <%=question%>
+      <div class = "col-md-12 question-user">
+        <%=question%>
       </div>
   <div id="choices">
-  <button id = "a"><%=answer_1%></button>
-  <button id = "b"><%=answer_2%></button>
-  <button id = "c"><%=answer_3%></button>
-  <button id = "d"><%=answer_4%></button>
-  <button id = "e"><%=answer_5%></button>
-  <button id = "f"><%=answer_6%></button>
-
+  <a href = "/voted" id = "a"><%=answer_1%></a>
+  <a href = "/voted" id = "b"><%=answer_2%></a>
+  <% if(answer_3){%>
+  <a href = "/voted" id = "c"><%=answer_3%></a>
+  <% } %>
+  <% if(answer_4){%>
+  <a href = "/voted" id = "d"><%=answer_4%></a>
+  <% } %>
+  <% if(answer_5){%>
+  <a href = "/voted" id = "e"><%=answer_5%></a>
+  <% } %>
+  <% if(answer_6){%>
+  <a href = "/voted" id = "f"><%=answer_6%></a>
+  <% } %>
 </div>
 <div id="vote-results"></div>
 <div id="connection-count"></div>

@@ -4,6 +4,27 @@
         url('Hapole-Pencil.ttf.woff') format('woff')
 }
 
+button {
+  color: white;
+  background-color: black;
+}
+.question{
+  font-size: 3em;
+}
+h1 {
+  padding-top: 10%;
+  text-align: center;
+  font-size: 7em;
+}
+.question-user{
+  font-size: 2em;
+}
+.user-page{
+  text-align: center;
+  font-size: 4em;
+  padding-top: 10%;
+}
+
 li{
   font-family: 'pencil';
   font-size: 3em;
@@ -11,18 +32,22 @@ li{
 .timer{
   list-style-type: none;
 }
-
+.poll-form li {
+  padding-top: 1%;
+}
 #vote-results li{
   list-style-type: none;
+  font-size: 1em;
 }
 .links {
   font-family: 'pencil';
   font-size: 3em;
   padding-top: 20%;
 }
-#submit{
+#submit, #add-response{
   font-family: 'pencil';
   font-size: 2em;
+  margin-top: 5%;
 }
 .menu {
   font-family: 'pencil';
@@ -34,7 +59,7 @@ li{
 .admin-page{
   text-align: center;
   font-size: 3em;
-  padding-top: 20%;
+  padding-top: 10%;
 }
 
 .admin-page li{
@@ -58,8 +83,4 @@ li{
 
 #question, #answer-1, #answer-2,#answer-3,#answer-4, #timer {
   color: black;
-}
-
-#submit{
-  margin-top: 5%;
 }
