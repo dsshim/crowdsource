@@ -8,7 +8,13 @@ li{
   font-family: 'pencil';
   font-size: 3em;
 }
+.timer{
+  list-style-type: none;
+}
 
+#vote-results li{
+  list-style-type: none;
+}
 .links {
   font-family: 'pencil';
   font-size: 3em;

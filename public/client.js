@@ -27,7 +27,7 @@ socket.on('voteCount', function (data) {
   var votes = []
   for (var key in data) {
     // if (Object.prototype.hasOwnProperty.call(data, key)) {
-      if(!(key === "undefined")){
+      if(!(key === "undefined" || key ==="")){
       votes.push(key+": "+data[key]+" ")
       // var val = obj[key];
       // use val
@@ -35,7 +35,23 @@ socket.on('voteCount', function (data) {
   // }
   }
 
-  document.getElementById("vote-results").innerHTML = ("<ul><li>"+votes[0]+"</li><li>"+votes[1]+"</li><li>"+votes[2]+"</li><li>"+votes[3]+"</li></ul>")
+    // var temp = [];
+    //
+    // for(let i of votes)
+    // i && temp.push(i);
+    //
+    // votes = temp;
+    // delete temp;
+
+
+  var userVoteString = "<ul><li>"
+  for (var i = 0; i < votes.length; i++) {
+    userVoteString = userVoteString +votes[i]+"</li><li>"
+  }
+
+document.getElementById("vote-results").innerHTML =  userVoteString
+
+  // document.getElementById("vote-results").innerHTML = ("<ul><li>"+votes[0]+"</li><li>"+votes[1]+"</li><li>"+votes[2]+"</li><li>"+votes[3]+"</li></ul>")
 
 });
 
@@ -51,9 +67,12 @@ socket.on('adminVoteCount', function (data) {
     }
   }
 
-
-
-  document.getElementById("admin-results").innerHTML =  ("<ul><li>"+votes[0]+"</li><li>"+votes[1]+"</li><li>"+votes[2]+"</li><li>"+votes[3]+"</li></ul>")
+  var voteString = "<ul><li>"
+  for (var i = 0; i < votes.length; i++) {
+    voteString = voteString +votes[i]+"</li><li>"
+  }
+document.getElementById("admin-results").innerHTML =  voteString
+  // document.getElementById("admin-results").innerHTML =  ("<ul><li>"+votes[0]+"</li><li>"+votes[1]+"</li><li>"+votes[2]+"</li><li>"+votes[3]+"</li></ul>")
 
 });
 
@@ -82,7 +101,7 @@ for (var i = 0; i < buttons.length; i++) {
 }
 
 function getAnswers() {
-  var answers = [$("#a").text(),$("#b").text(),$("#c").text(),$("#d").text()];
+  var answers = [$("#a").text(),$("#b").text(),$("#c").text(),$("#d").text(),$("#e").text(),$("#f").text()];
   return answers
 }
 // $(".vote").on("click", function(event){
@@ -107,18 +126,21 @@ function getAnswers() {
 
 $("#submit").on("click", function(event){
   console.log("clicked")
-  // $.each($( ".poll" ).find( ".answers" ), function(index, value) { console.log(value["id"])})
+  var answers = []
+  $.each($( ".poll" ).find( ".answers" ), function(index, value) {
+    answers.push(value["value"])
+  })
   socket.emit("poll", {
     question: $("#question").val(),
     timer: $("#timer").val(),
     // $.each($( ".poll" ).find( ".answers" ), function(index, value) {
     //   return value["id"]+": "+value["value"],
     // });
-    answer_1: $("#answer-1").val(),
-    answer_2: $("#answer-2").val(),
-    answer_3: $("#answer-3").val(),
-    answer_4: $("#answer-4").val(),
-
+    // answer_1: $("#answer-1").val(),
+    // answer_2: $("#answer-2").val(),
+    // answer_3: $("#answer-3").val(),
+    // answer_4: $("#answer-4").val(),
+    answers: answers,
   });
 });
 

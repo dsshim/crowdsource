@@ -117,7 +117,7 @@ io.on('connection', function(socket) {
 
 
         if(dbset.status === "0"){
-          response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
+          response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4,answer_5: dbset.answer_5, answer_6: dbset.answer_6})
           // socket.join(dbset.user_url);
           // console.log(io.sockets.adapter.rooms)
         }else{
@@ -127,11 +127,7 @@ io.on('connection', function(socket) {
 
         client.hgetall(dbset.admin_user_url, function(err, dbset){
           if(dbset.status === "0"){
-            answers = []
-            answers.push(dbset.answer_1)
-            answers.push(dbset.answer_2)
-            answers.push(dbset.answer_3)
-            answers.push(dbset.answer_4)
+
             // buildAdminVoteHash(answers,dbset.user_url)
 
             if(dbset.timer > 0) {
@@ -154,8 +150,16 @@ io.on('connection', function(socket) {
               // }
               // }, interval);
             }
-            response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
-            // socket.join(dbset.user_url);
+            answers = []
+          answers.push(dbset.answer_1)
+          answers.push(dbset.answer_2)
+          answers.push(dbset.answer_3)
+          answers.push(dbset.answer_4)
+          answers.push(dbset.answer_5)
+          answers.push(dbset.answer_6)
+            buildAdminVoteHash(answers,dbset.user_url)
+            response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4,answer_5: dbset.answer_5, answer_6: dbset.answer_6})
+            // socket.join(dbsext.user_url);
             // console.log(io.sockets.adapter.rooms)
           }else{
             response.render('closed')
@@ -223,10 +227,13 @@ io.on('connection', function(socket) {
     adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
     currentUser = new User(count,adminUrlHash, userUrlHash)
     client.hset(userUrlHash, "question", message.question, redis.print);
-    client.hset(userUrlHash, "answer_1",message.answer_1, redis.print);
-    client.hset(userUrlHash, "answer_2",message.answer_2, redis.print);
-    client.hset(userUrlHash, "answer_3",message.answer_3, redis.print);
-    client.hset(userUrlHash, "answer_4",message.answer_4, redis.print);
+    _.forEach(message.answers, function(value, index) {
+      client.hset(userUrlHash,"answer_"+(index+1), value, redis.print)
+    })
+    // client.hset(userUrlHash, "answer_1",message.answer_1, redis.print);
+    // client.hset(userUrlHash, "answer_2",message.answer_2, redis.print);
+    // client.hset(userUrlHash, "answer_3",message.answer_3, redis.print);
+    // client.hset(userUrlHash, "answer_4",message.answer_4, redis.print);
     client.hset(userUrlHash,"answer_1_count", 0, redis.print);
     client.hset(userUrlHash,"answer_2_count", 0, redis.print);
     client.hset(userUrlHash,"answer_3_count", 0, redis.print);
@@ -237,6 +244,7 @@ io.on('connection', function(socket) {
     client.hset(userUrlHash, "timer",message.timer, redis.print);
     client.hset(userUrlHash, "status", 0, redis.print);
     client.hset(adminUrlHash, "admin_user_url",userUrlHash, redis.print);
+
     // createRoomVote()
 
     // socket.emit("urls", {adminUrl: adminUrlHash, userUrl: userUrlHash})
@@ -277,13 +285,12 @@ io.on('connection', function(socket) {
     // if (channel === 'voteCast') {
     votes[message.currentUrl]={}
 
-
     votes[message.currentUrl][socket.id] = message.answer;
     // adminVoteCount[message.currentUrl] = {}
-    adminVoteCount[message.currentUrl] = {}
+    // adminVoteCount[message.currentUrl] = {}
     // adminVoteCount[message.currentUrl]["total"]={}
 
-    buildAdminVoteHash(message.answers,userUrlHash, socket.id)
+
 
     io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.answers, message.currentUrl, socket.id));
     io.sockets.in(message.currentUrl).emit('adminVoteCount', countAdminVotes(votes,message.answers, message.currentUrl, socket.id));
@@ -380,12 +387,12 @@ function buildVoteHash(answers, roomId, socketId) {
 function buildAdminVoteHash(answers, roomId, socketId) {
   // voteCount[roomId] = {}
   // voteCount[roomId][socketId]={}
-  // adminVoteCount[roomId] = {}
+  adminVoteCount[roomId] = {}
   // voteCount[roomId][socketId]={}
 
   _.forEach(answers, function(answer) {
 
-    if(!(answer in adminVoteCount)){
+    if(!(answer in voteCount)){
 
 
       adminVoteCount[roomId][answer] = 0
@@ -445,9 +452,16 @@ function countVotes(votes, answers, room, socketId) {
 function countAdminVotes(votes, answers, room, socketId) {
   _.forEach(votes, function(vote) {
 
-    adminVoteCount[room][vote] = adminVoteCount[room][vote] + adminVoteCount[room][vote[socketId]]++
+
+    adminVoteCount[room][vote[socketId]]++
+
+    })
+
+      return adminVoteCount[room];
+
+
     // adminVoteCount[room]["total"][vote[socketId]]++
-  })
+  }
 
   // _.forEach(adminVoteCount, function(hash) {
   //
@@ -461,12 +475,6 @@ function countAdminVotes(votes, answers, room, socketId) {
   //
   //   })
   // })
-
-
-  return adminVoteCount[room];
-
-
-}
 
 // function startTimer(timer, userUrl) {
 //   timeOutId= window.setTimeout(closePoll(userUrl), timer);
