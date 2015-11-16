@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const moment = require('moment');
 
 if (process.env.REDISTOGO_URL) {
   var rtg   = require("url").parse(process.env.REDISTOGO_URL);
@@ -34,7 +35,7 @@ var voteCount = {};
 var adminVoteCount = {}
 
 // var sessionSocket;
-
+app.use(express.static(__dirname + "/public"));
 // app.configure(function(){
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, 'public')));
@@ -92,6 +93,10 @@ app.get('/new', function(request, response) {
   response.render('new' , {userUrl: userUrlHash, adminUrl: adminUrlHash})
 });
 
+app.get('/closed', function(request, response) {
+  response.render('closed')
+})
+
 
 // var homePage = io.of('/')
 // homePage.on('connection', function(socket) {
@@ -111,22 +116,50 @@ io.on('connection', function(socket) {
       if(dbset.user_url === request.params.id) {
 
 
-        response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
-        // socket.join(dbset.user_url);
-        // console.log(io.sockets.adapter.rooms)
-
+        if(dbset.status === "0"){
+          response.render('user', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
+          // socket.join(dbset.user_url);
+          // console.log(io.sockets.adapter.rooms)
+        }else{
+          response.render('closed')
+        }
       } else {
 
         client.hgetall(dbset.admin_user_url, function(err, dbset){
-          answers = []
-          answers.push(dbset.answer_1)
-          answers.push(dbset.answer_2)
-          answers.push(dbset.answer_3)
-          answers.push(dbset.answer_4)
-          buildAdminVoteHash(answers,dbset.user_url)
-          response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2})
-          // socket.join(dbset.user_url);
-          // console.log(io.sockets.adapter.rooms)
+          if(dbset.status === "0"){
+            answers = []
+            answers.push(dbset.answer_1)
+            answers.push(dbset.answer_2)
+            answers.push(dbset.answer_3)
+            answers.push(dbset.answer_4)
+            // buildAdminVoteHash(answers,dbset.user_url)
+
+            if(dbset.timer > 0) {
+              var eventTime= moment().add('seconds', dbset.timer); // Timestamp - Sun, 21 Apr 2013 13:00:00 GMT
+              var currentTime = moment(); // Timestamp - Sun, 21 Apr 2013 12:30:00 GMT
+              var diffTime = eventTime - currentTime;
+              // var duration = moment.duration(diffTime, 'milliseconds');
+              // var interval = 1000;
+              setTimeout(function(){
+                closePollTimer(dbset.user_url); //or elemement
+              }, diffTime);
+              // setTimeout(closePollTimer(dbset.user_url), moment.duration(diffTime, "milliseconds"))
+              // setTimeout(function(){
+              // duration = moment.duration(duration - interval, 'milliseconds');
+
+              //   $('.countdown').text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
+
+              // if(duration <=0){
+              // client.hset(dbset.user_url, "status", 1, redis.print)
+              // }
+              // }, interval);
+            }
+            response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4})
+            // socket.join(dbset.user_url);
+            // console.log(io.sockets.adapter.rooms)
+          }else{
+            response.render('closed')
+          }
         });
 
       }
@@ -175,9 +208,16 @@ io.on('connection', function(socket) {
   //   });
   //
   // })
+  socket.on("close", function (message) {
+
+    client.hgetall(message.admin_url, function(err, dbset){
+
+      client.hset(dbset.admin_user_url, "status", 1, redis.print)
+    })
+
+  })
 
   socket.on("poll", function (message) {
-
 
     userUrlHash = crypto.createHash("md5").update(socket.id+Date.now()).digest("hex");
     adminUrlHash = crypto.createHash("md5").update(socket + Date.now()).digest("hex")
@@ -194,8 +234,11 @@ io.on('connection', function(socket) {
     client.hset(userUrlHash,"admin_url", adminUrlHash, redis.print);
     client.hset(userUrlHash, "user_url",userUrlHash, redis.print);
     client.hset(userUrlHash, "socketId",socket.id, redis.print);
+    client.hset(userUrlHash, "timer",message.timer, redis.print);
+    client.hset(userUrlHash, "status", 0, redis.print);
     client.hset(adminUrlHash, "admin_user_url",userUrlHash, redis.print);
-    createRoomVote()
+    // createRoomVote()
+
     // socket.emit("urls", {adminUrl: adminUrlHash, userUrl: userUrlHash})
 
     // var answers = []
@@ -203,12 +246,29 @@ io.on('connection', function(socket) {
     // answers.push(message.answer_2)
     // answers.push(message.answer_3)
     // answers.push(message.answer_4)
+    // buildAdminVoteHash(answers,userUrlHash)
     // buildVoteHash(answers,userUrlHash, socket.id)
     // console.log(userUrlHash)
     // console.log(adminUrlHash)
     //
     //
+    // adminVoteCount[userUrlHash] = {}
+    // adminVoteCount[userUrlHash]["total"]={}
+    // _.forEach(answers, function(answer) {
+    //   adminVoteCount[userUrlHash]["total"][answer] = 0
+    // })
 
+
+
+    // _.forEach(answers, function(answer) {
+    //
+    //   if(!(answer in adminVoteCount)){
+    //
+    //
+    //     adminVoteCount[userUrlHash]["total"][answer] = 0
+    //
+    //   }
+    // })
 
   });
 
@@ -218,12 +278,16 @@ io.on('connection', function(socket) {
     votes[message.currentUrl]={}
 
 
-      votes[message.currentUrl][socket.id] = message.answer;
+    votes[message.currentUrl][socket.id] = message.answer;
+    // adminVoteCount[message.currentUrl] = {}
+    adminVoteCount[message.currentUrl] = {}
+    // adminVoteCount[message.currentUrl]["total"]={}
 
+    buildAdminVoteHash(message.answers,userUrlHash, socket.id)
 
-      io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.answers, message.currentUrl, socket.id));
-      io.sockets.in(message.currentUrl).emit('adminVoteCount', countAdminVotes(votes,message.answers, message.currentUrl, socket.id));
-      console.log(votes);
+    io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.answers, message.currentUrl, socket.id));
+    io.sockets.in(message.currentUrl).emit('adminVoteCount', countAdminVotes(votes,message.answers, message.currentUrl, socket.id));
+    console.log(votes);
     // }
   });
 
@@ -231,15 +295,24 @@ io.on('connection', function(socket) {
 
     client.hgetall(data.currentUrl, function(err, dbset){
       if(dbset.user_url === data.currentUrl ){
-      socket.join(dbset.user_url);
-      console.log(io.sockets.adapter.rooms)
-    }else{
-      socket.join(dbset.admin_user_url);
-      console.log(io.sockets.adapter.rooms)
-      // console.log(io.sockets.adapter.rooms)
-    }
+        socket.join(dbset.user_url);
+        console.log(io.sockets.adapter.rooms)
+      }else{
+        socket.join(dbset.admin_user_url);
+        console.log(io.sockets.adapter.rooms)
+        // console.log(io.sockets.adapter.rooms)
+      }
     });
+
+
   })
+
+  // socket.on("timerEnded", function(data) {
+  //
+  //   client.hgetall(data.currentUrl, function(err, dbset) {
+  //     client.hset(dbset.admin_user_url, "status", 1, redis.print)
+  //   })
+  // })
 
   // socket.on("votes", function(message){
   //   // console.log("received votes")
@@ -282,6 +355,10 @@ io.on('connection', function(socket) {
 
 });
 
+function closePollTimer(url) {
+  client.hset(url, "status", 1, redis.print)
+}
+
 
 function buildVoteHash(answers, roomId, socketId) {
   // voteCount[roomId] = {}
@@ -300,15 +377,16 @@ function buildVoteHash(answers, roomId, socketId) {
 
 }
 
-function buildAdminVoteHash(answers, roomId) {
+function buildAdminVoteHash(answers, roomId, socketId) {
   // voteCount[roomId] = {}
   // voteCount[roomId][socketId]={}
-  adminVoteCount[roomId] = {}
+  // adminVoteCount[roomId] = {}
   // voteCount[roomId][socketId]={}
 
   _.forEach(answers, function(answer) {
 
-    if(!(answer in voteCount)){
+    if(!(answer in adminVoteCount)){
+
 
       adminVoteCount[roomId][answer] = 0
 
@@ -324,7 +402,7 @@ function countVotes(votes, answers, room, socketId) {
 
 
 
-_.forEach(votes, function(vote) {
+  _.forEach(votes, function(vote) {
 
 
 
@@ -332,33 +410,34 @@ _.forEach(votes, function(vote) {
 
 
 
-  // if(room in votes){
+    // if(room in votes){
 
-  // voteCount[vote[socketId]]++
+    // voteCount[vote[socketId]]++
 
-  voteCount[room][socketId][vote[socketId]]++
-
-
+    voteCount[room][socketId][vote[socketId]]++
 
 
-  // client.hset(room, "votes"+socketId, vote[socketId], redis.print);
 
-// }
-})
 
-// var totalVotes = [];
-// socketKey ="votes"+socketId
-// client.hgetall(room, function(err, dbset){
-//
-//   pry = require('pryjs')
-//   eval(pry.it)
-//
-//   totalVotes.push(dbset.socketKey)
-//   // for (vote in votes) {
-//   //   voteCount[votes[vote]]++
-//   // }
-// })
+    // client.hset(room, "votes"+socketId, vote[socketId], redis.print);
 
+    // }
+  })
+
+  // var totalVotes = [];
+  // socketKey ="votes"+socketId
+  // client.hgetall(room, function(err, dbset){
+  //
+  //   pry = require('pryjs')
+  //   eval(pry.it)
+  //
+  //   totalVotes.push(dbset.socketKey)
+  //   // for (vote in votes) {
+  //   //   voteCount[votes[vote]]++
+  //   // }
+  // })
+
+  // _(voteCount).omit(_.isUndefined).omit(_.isNull).value();
   return voteCount[room][socketId];
 
 }
@@ -366,15 +445,39 @@ _.forEach(votes, function(vote) {
 function countAdminVotes(votes, answers, room, socketId) {
   _.forEach(votes, function(vote) {
 
-
-  adminVoteCount[room][vote[socketId]]++
-
+    adminVoteCount[room][vote] = adminVoteCount[room][vote] + adminVoteCount[room][vote[socketId]]++
+    // adminVoteCount[room]["total"][vote[socketId]]++
   })
 
-    return adminVoteCount[room];
+  // _.forEach(adminVoteCount, function(hash) {
+  //
+  //   _.forEach(answers, function(answer){
+  //
+  //     // if(adminVoteCount[room][socketId]){
+  //       // adminVoteCount[room][socketId][answer] = 0
+  //       // adminVoteCount[room]["total"][answer] = adminVoteCount[room]["total"][answer] + adminVoteCount[room][socketId][answer]
+  //     // }
+  //     adminVoteCount[room]["total"][answer] = adminVoteCount[room]["total"][answer] + adminVoteCount[room][socketId][answer]
+  //
+  //   })
+  // })
+
+
+  return adminVoteCount[room];
 
 
 }
+
+// function startTimer(timer, userUrl) {
+//   timeOutId= window.setTimeout(closePoll(userUrl), timer);
+// }
+
+function closePoll(userUrl) {
+  client.hset(userUrl, "status", 1, redis.print)
+}
+
+
+
 module.exports = server;
 // function sendUrl() {
 //   socket.emit("currentUrl", {currentUrl: request.originalUrl})

@@ -5,20 +5,33 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+  <link rel='stylesheet' href='/base.css' />
+  <style>
+
+  </style>
   <title>Your Poll</title>
 </head>
-<body>
-  <div class = "container">
+<body class="custom">
+  <div class = "container admin-page">
 
     <div class ="row">
       <div class = "col-md-12">
-        Question: <%=question%>
+      <%=question%>
       </div>
       <div class="col-md-12">
-        Answers: <%=answer_1%>
-               : <%=answer_2%>
+
       </div>
-      <div id="admin-results"></div><br>
+      <div id="admin-results">
+        <ul>
+        <li><%=answer_1%></li>
+        <li><%=answer_2%></li>
+        <li><%=answer_3%></li>
+        <li><%=answer_4%></li>
+      </ul>
+      </div><br>
+      </div>
+      <div class = "row">
+        <a href="/closed" id ="close" type="submit" name="close">Close Poll</a>
       </div>
       <div id="connection-count"></div>
     </div>

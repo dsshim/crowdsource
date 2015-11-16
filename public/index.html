@@ -4,23 +4,50 @@
   <meta charset="utf-8">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="base.css">
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
 
   <title>CrowdSource</title>
 </head>
-<body>
+<body class = "custom">
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+
+    <div class="container navbar-title">
+
+       <div class="navbar-header">
+
+       </div>
+
+       <div class = "menu">
+         <ul class="nav navbar-nav">
+           <a  href="#">crowdSource</a>
+         </ul>
+       </div>
+     </div>
+
+
+
+</nav>
   <div class = "container">
     <div class ="row poll" style="text-align:center; padding-top:30%">
-
-  <input id ="question" name="poll[question]" value="Question">
-  <input id ="answer-1" name="poll[answer_1]" value="Answer 1">
-  <input id ="answer-2"name="poll[answer_2]" value="Answer 2">
-  <input id ="answer-3"name="poll[answer_3]" value="Answer 3">
-  <input id ="answer-4"name="poll[answer_4]" value="Answer 4">
-  <a href="/new" id ="submit" type="submit" name="submit">Submit</a>
+<ul class = "poll-form">
+  <li>Enter Your Question&nbsp;&nbsp;&nbsp;<input id ="question" name="poll[question]" value="Question"></li>
+  <li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-1" name="poll[answer_1]" value="Answer 1"></li>
+  <li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-2"name="poll[answer_2]" value="Answer 2"></li>
+  <li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-3"name="poll[answer_3]" value="Answer 3"></li>
+  <li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-4"name="poll[answer_4]" value="Answer 4"></li>
+  <li>Add Timer &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id ="timer" name="timer"></li>
+  <button id = "add-response">Add Response</button>
+  <a href="/new" id ="submit" class ="btn btn-danger" type="submit" name="submit">Submit</a>
 
       </div>
+
+  <div class = "row timer">
+
+  </div>
+</ul>
+
       <div id="connection-count"></div>
   </div>
 </body>

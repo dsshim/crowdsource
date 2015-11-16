@@ -1,5 +1,5 @@
 var socket = io();
-
+var count = 3
 
 // socket.on("urls", function(urls) {
 //   console.log(urls)
@@ -26,32 +26,40 @@ socket.on('voteCount', function (data) {
   // document.getElementById("vote-results").innerText =
   var votes = []
   for (var key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
+    // if (Object.prototype.hasOwnProperty.call(data, key)) {
+      if(!(key === "undefined")){
       votes.push(key+": "+data[key]+" ")
       // var val = obj[key];
       // use val
     }
+  // }
   }
 
-  document.getElementById("vote-results").innerText = votes
+  document.getElementById("vote-results").innerHTML = ("<ul><li>"+votes[0]+"</li><li>"+votes[1]+"</li><li>"+votes[2]+"</li><li>"+votes[3]+"</li></ul>")
 
 });
+
 
 socket.on('adminVoteCount', function (data) {
   // document.getElementById("vote-results").innerText =
   var votes = []
   for (var key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
-      votes.push(key+": "+data[key]+" ")
+    if(!(key === "undefined")){
+      votes.push(key+" : "+data[key]+" ")
       // var val = obj[key];
       // use val
     }
   }
 
-  document.getElementById("admin-results").innerText = votes
+
+
+  document.getElementById("admin-results").innerHTML =  ("<ul><li>"+votes[0]+"</li><li>"+votes[1]+"</li><li>"+votes[2]+"</li><li>"+votes[3]+"</li></ul>")
 
 });
 
+function closePoll() {
+  socket.emit("timerEnded", {currentUrl: currentUrl})
+}
 
 
 // socket.on("liveVotes", function(data) {
@@ -99,15 +107,29 @@ function getAnswers() {
 
 $("#submit").on("click", function(event){
   console.log("clicked")
+  // $.each($( ".poll" ).find( ".answers" ), function(index, value) { console.log(value["id"])})
   socket.emit("poll", {
     question: $("#question").val(),
+    timer: $("#timer").val(),
+    // $.each($( ".poll" ).find( ".answers" ), function(index, value) {
+    //   return value["id"]+": "+value["value"],
+    // });
     answer_1: $("#answer-1").val(),
     answer_2: $("#answer-2").val(),
     answer_3: $("#answer-3").val(),
-    answer_4: $("#answer-4").val()
+    answer_4: $("#answer-4").val(),
+
   });
 });
 
+$("#close").on("click", function(event) {
+  socket.emit("close", {admin_url: window.location.pathname.substr(6)})
+})
+
+$("#add-response").on("click", function(event) {
+  $(".poll ul").append('<li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-'+count+'" value="Answer '+count+'" ></li>');
+  count++
+})
 // $(".admin-url").on("click", function(event){
 //   socket.send("userData", {
 //     adminUrl: event.target.text()

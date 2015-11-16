@@ -1,0 +1,59 @@
+@font-face {
+  font-family: 'pencil';
+  src:  url('Hapole-Pencil.ttf.eot') format('eot'),
+        url('Hapole-Pencil.ttf.woff') format('woff')
+}
+
+li{
+  font-family: 'pencil';
+  font-size: 3em;
+}
+
+.links {
+  font-family: 'pencil';
+  font-size: 3em;
+  padding-top: 20%;
+}
+#submit{
+  font-family: 'pencil';
+  font-size: 2em;
+}
+.menu {
+  font-family: 'pencil';
+  font-size: 3em;
+  text-align: center;
+  color: white;
+}
+
+.admin-page{
+  text-align: center;
+  font-size: 3em;
+  padding-top: 20%;
+}
+
+.admin-page li{
+  font-size: 1.5em;
+  list-style-type: none;
+}
+
+.menu a, .menu a:hover, .menu a:visited{
+  color: white;
+  text-decoration: none;
+}
+.custom {
+  background-color: black;
+  color: white;
+  font-family: 'pencil';
+}
+
+.poll-form {
+  list-style-type: none;
+}
+
+#question, #answer-1, #answer-2,#answer-3,#answer-4, #timer {
+  color: black;
+}
+
+#submit{
+  margin-top: 5%;
+}
