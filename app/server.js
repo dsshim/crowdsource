@@ -100,7 +100,7 @@ io.on('connection', function(socket) {
         socket.join(dbset.admin_user_url);
       }
     });
-  })
+  });
   socket.on('disconnect', function () {
     io.sockets.emit('usersConnected', io.engine.clientsCount);
   });
@@ -115,32 +115,32 @@ function setVotesHash(answer,socket, url){
   votes[url][socket.id] = answer;
 }
 function closePollTimer(url) {
-  client.hset(url, "status", 1, redis.print)
+  client.hset(url, "status", 1, redis.print);
   io.sockets.in(url).emit('closePoll');
 }
 
 function buildVoteHash(answers, roomId, socketId) {
-  voteCount[roomId] = {}
+  voteCount[roomId] = {};
   _.forEach(answers, function(answer) {
     if(!(answer in voteCount)){
-      voteCount[roomId][answer] = 0
+      voteCount[roomId][answer] = 0;
     }
-  })
+  });
 }
 
 function buildAdminVoteHash(answers, roomId, socketId) {
-  adminVoteCount[roomId] = {}
+  adminVoteCount[roomId] = {};
   _.forEach(answers, function(answer) {
     if(!(answer in voteCount)){
-      adminVoteCount[roomId][answer] = 0
+      adminVoteCount[roomId][answer] = 0;
     }
-  })
+  });
 }
 
 function countVotes(votes, answers, room, socketId) {
   _.forEach(votes, function(vote) {
-    voteCount[room][vote[socketId]]++
-  })
+    voteCount[room][vote[socketId]]++;
+  });
   return voteCount[room];
 }
 
@@ -157,13 +157,13 @@ function storeResults(votes, room) {
 
   _.forEach(votes, function(total, answer) {
     voteArray.push([answer,total]);
-  })
+  });
   _.forEach(voteArray, function(result,index) {
     if(!(result[0] === "undefined")){
       client.hset(room, "answer_"+(index+1)+"_name", result[0], redis.print);
-      client.hset(room, "answer_"+(index+1)+"_count", result[1], redis.print)
-    };
-  })
+      client.hset(room, "answer_"+(index+1)+"_count", result[1], redis.print);
+    }
+  });
 }
 
 function closePoll(userUrl) {
@@ -185,20 +185,20 @@ function createHashes(socket) {
 }
 
 function createUser(count,adminUrlHash, userUrlHash) {
-  var currentUser = new User(count,adminUrlHash, userUrlHash)
+  var currentUser = new User(count,adminUrlHash, userUrlHash);
 }
 
 function storePoll(userUrlHash,adminUrlHash,question,answers,socket,timer, checkbox) {
-  storeQuestion(userUrlHash, question)
-  storeAnswers(userUrlHash, answers)
-  storeUrls(adminUrlHash,userUrlHash, timer,socket)
-  storeCheckbox(userUrlHash, checkbox)
+  storeQuestion(userUrlHash, question);
+  storeAnswers(userUrlHash, answers);
+  storeUrls(adminUrlHash,userUrlHash, timer,socket);
+  storeCheckbox(userUrlHash, checkbox);
 }
 
 function storeAnswers(userUrlHash, answers){
   _.forEach(answers, function(value, index) {
-    client.hset(userUrlHash,"answer_"+(index+1), value, redis.print)
-  })
+    client.hset(userUrlHash,"answer_"+(index+1), value, redis.print);
+  });
 }
 
 function storeQuestion(userUrlHash, question) {
