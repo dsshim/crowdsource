@@ -11,6 +11,29 @@ button {
 .question{
   font-size: 3em;
 }
+
+.vote-results{
+
+  font-size: 3em;
+}
+
+.check-text{
+  padding-top: 2%;
+}
+
+input[type=checkbox] {
+  /*padding-right: 0%;*/
+  /* All browsers except webkit*/
+  transform: scale(3);
+
+  /* Webkit browsers*/
+  -webkit-transform: scale(3);
+}
+
+
+.results ul{
+  list-style-type: none;
+}
 h1 {
   padding-top: 10%;
   text-align: center;
@@ -79,6 +102,7 @@ li{
 
 .poll-form {
   list-style-type: none;
+  margin-top: -10%;
 }
 
 #question, #answer-1, #answer-2,#answer-3,#answer-4, #timer {

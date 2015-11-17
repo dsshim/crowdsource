@@ -35,6 +35,8 @@ var adminUrlHash;
 var currentUser;
 var voteCount = {};
 var adminVoteCount = {}
+var totalVotes;
+
 
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -88,6 +90,7 @@ io.on('connection', function(socket) {
             answers.push(dbset.answer_5)
             answers.push(dbset.answer_6)
             buildAdminVoteHash(answers,dbset.user_url)
+            buildVoteHash(answers,dbset.user_url)
             response.render('admin', {question: dbset.question, answer_1: dbset.answer_1, answer_2: dbset.answer_2, answer_3: dbset.answer_3, answer_4: dbset.answer_4,answer_5: dbset.answer_5, answer_6: dbset.answer_6})
           }else{
             response.render('closed')
@@ -107,8 +110,6 @@ io.on('connection', function(socket) {
       client.hset(dbset.admin_user_url, "status", 1, redis.print)
       io.sockets.in(dbset.admin_user_url).emit('closePoll');
     })
-
-
   })
 
   socket.on("poll", function (message) {
@@ -130,13 +131,25 @@ io.on('connection', function(socket) {
     client.hset(userUrlHash, "timer",message.timer, redis.print);
     client.hset(userUrlHash, "status", 0, redis.print);
     client.hset(adminUrlHash, "admin_user_url",userUrlHash, redis.print);
+    if(message.checkbox === true) {
+      client.hset(userUrlHash, "checkbox", 1, redis.print);
+    } else {
+      client.hset(userUrlHash, "checkbox", 0, redis.print);
+    }
   });
 
   socket.on('voteCast', function (message) {
     votes[message.currentUrl]={}
     votes[message.currentUrl][socket.id] = message.answer;
-    io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes,message.answers, message.currentUrl, socket.id));
     io.sockets.in(message.currentUrl).emit('adminVoteCount', countAdminVotes(votes,message.answers, message.currentUrl, socket.id));
+
+    client.hgetall(message.currentUrl, function(err, dbset) {
+      if(dbset.checkbox === "1"){
+
+        io.sockets.in(message.currentUrl).emit('voteCount', countVotes(votes, message.answers,message.currentUrl, socket.id));
+      }
+    })
+
     console.log(votes);
   });
 
@@ -165,13 +178,13 @@ function closePollTimer(url) {
 
 function buildVoteHash(answers, roomId, socketId) {
   voteCount[roomId] = {}
-  voteCount[roomId][socketId]={}
+
 
   _.forEach(answers, function(answer) {
 
     if(!(answer in voteCount)){
 
-      voteCount[roomId][socketId][answer] = 0
+      voteCount[roomId][answer] = 0
     }
   })
 
@@ -194,12 +207,12 @@ function buildAdminVoteHash(answers, roomId, socketId) {
 
 function countVotes(votes, answers, room, socketId) {
 
-  buildVoteHash(answers,room, socketId)
+
 
   _.forEach(votes, function(vote) {
-    voteCount[room][socketId][vote[socketId]]++
+    voteCount[room][vote[socketId]]++
   })
-  return voteCount[room][socketId];
+  return voteCount[room];
 }
 
 function countAdminVotes(votes, answers, room, socketId) {
@@ -207,7 +220,7 @@ function countAdminVotes(votes, answers, room, socketId) {
     adminVoteCount[room][vote[socketId]]++
   })
 
-  
+
   return adminVoteCount[room];
 }
 

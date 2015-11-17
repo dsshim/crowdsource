@@ -34,23 +34,25 @@
         <%=question%>
       </div>
   <div id="choices">
-  <a href = "/voted" id = "a"><%=answer_1%></a>
-  <a href = "/voted" id = "b"><%=answer_2%></a>
+  <a href = "#" id = "a"><%=answer_1%></a>
+  <a href = "#" id = "b"><%=answer_2%></a>
   <% if(answer_3){%>
-  <a href = "/voted" id = "c"><%=answer_3%></a>
+  <a href = "#" id = "c"><%=answer_3%></a>
   <% } %>
   <% if(answer_4){%>
-  <a href = "/voted" id = "d"><%=answer_4%></a>
+  <a href = "#" id = "d"><%=answer_4%></a>
   <% } %>
   <% if(answer_5){%>
-  <a href = "/voted" id = "e"><%=answer_5%></a>
+  <a href = "#" id = "e"><%=answer_5%></a>
   <% } %>
   <% if(answer_6){%>
-  <a href = "/voted" id = "f"><%=answer_6%></a>
+  <a href = "#" id = "f"><%=answer_6%></a>
   <% } %>
 </div>
 <div id="poll-closed"></div>
-<div id="vote-results"></div>
+
+<div id= "thanks-voted"></div>
+<div id="vote-results" class="results"></div>
 <div id="connection-count"></div>
 
       </div>

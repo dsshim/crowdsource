@@ -2,9 +2,14 @@ var socket = io();
 var count = 3
 
 window.onload = function () {
-  if(window.location.pathname.length > 5){
+  if(window.location.pathname.length > 10){
     socket.emit("setRooms", {currentUrl: window.location.pathname.substr(6)})
   }
+  // if(window.location.pathname ==="/voted"){
+  //   socket.emit("getTotalVotes", {url: document.referrer.substring(document.referrer.length-32)})
+  //   socket.emit("setRooms", {currentUrl: document.referrer.substring(document.referrer.length-32)})
+  //
+  // }
 }
 
 var connectionCount = document.getElementById('connection-count');
@@ -60,9 +65,12 @@ var buttons = document.querySelectorAll('#choices a');
 for (var i = 0; i < buttons.length; i++) {
 
   buttons[i].addEventListener('click', function () {
+
     answers = getAnswers();
     var currentUrl = window.location.pathname.substr(6)
     socket.emit('voteCast', {answer: this.innerText, currentUrl: currentUrl, answers: answers, socketId: socket.id});
+    $("a").addClass('hidden');
+    $("#thanks-voted").append("Thanks for Voting!")
     console.log(this.innerText);
   });
 }
@@ -78,10 +86,12 @@ $("#submit").on("click", function(event){
   $.each($( ".poll" ).find( ".answers" ), function(index, value) {
     answers.push(value["value"])
   })
+  var checkbox = $('.voteCheckbox:checked').length > 0;
   socket.emit("poll", {
     question: $("#question").val(),
     timer: $("#timer").val(),
     answers: answers,
+    checkbox: checkbox
   });
 });
 
