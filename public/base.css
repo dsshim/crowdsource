@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'pencil';
-  src:  url('Hapole-Pencil.ttf.eot') format('eot'),
-        url('Hapole-Pencil.ttf.woff') format('woff')
+  src:  url('fonts/Hapole-Pencil.ttf.eot') format('eot'),
+        url('fonts/Hapole-Pencil.ttf.woff') format('woff')
 }
 
 button {
@@ -22,18 +22,33 @@ button {
 }
 
 input[type=checkbox] {
-  /*padding-right: 0%;*/
-  /* All browsers except webkit*/
+
   transform: scale(3);
 
-  /* Webkit browsers*/
   -webkit-transform: scale(3);
 }
 
+#choices a{
+  /*display: inline-block;*/
+  background-color: black;
+  color: #4285f4;
+  font-size: 1.5em;
+  text-decoration: none;
+}
+
+#choices li{
+  list-style-type: none;
+  font-size: 2em;
+}
 
 .results ul{
   list-style-type: none;
 }
+.results-closed{
+  text-align: center;
+  font-size: 2em;
+  }
+
 h1 {
   padding-top: 10%;
   text-align: center;

@@ -17,8 +17,6 @@ describe("Poll Server",function(){
       done();
     };
 
-
-
     client1.on('connect', function(data){
       client1.emit('usersConnected', 1);
 

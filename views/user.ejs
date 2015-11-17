@@ -13,55 +13,51 @@
 
     <div class="container navbar-title">
 
-       <div class="navbar-header">
+      <div class="navbar-header">
 
-       </div>
+      </div>
 
-       <div class = "menu">
-         <ul class="nav navbar-nav">
-           <a  href="/">crowdSource</a>
-         </ul>
-       </div>
-     </div>
+      <div class = "menu">
+        <ul class="nav navbar-nav">
+          <a  href="/">crowdSource</a>
+        </ul>
+      </div>
+    </div>
 
 
 
-</nav>
+  </nav>
   <div class = "container user-page">
 
     <div class ="row">
       <div class = "col-md-12 question-user">
         <%=question%>
       </div>
-  <div id="choices">
-  <a href = "#" id = "a"><%=answer_1%></a>
-  <a href = "#" id = "b"><%=answer_2%></a>
-  <% if(answer_3){%>
-  <a href = "#" id = "c"><%=answer_3%></a>
-  <% } %>
-  <% if(answer_4){%>
-  <a href = "#" id = "d"><%=answer_4%></a>
-  <% } %>
-  <% if(answer_5){%>
-  <a href = "#" id = "e"><%=answer_5%></a>
-  <% } %>
-  <% if(answer_6){%>
-  <a href = "#" id = "f"><%=answer_6%></a>
-  <% } %>
-</div>
-<div id="poll-closed"></div>
+      <div class = "row">
+        <div id="choices">
 
-<div id= "thanks-voted"></div>
-<div id="vote-results" class="results"></div>
-<div id="connection-count"></div>
+            <a class="btn-default" id = "a"><%=answer_1%></a>&nbsp;&nbsp;&nbsp;
+            <a class="btn-default" id = "b"><%=answer_2%></a>&nbsp;&nbsp;&nbsp;<% if(answer_3){%>
+              <a class="btn-default" id = "c"><%=answer_3%></a>&nbsp;&nbsp;&nbsp;<% } %><% if(answer_4){%>
+                <a class="btn-default" id = "d"><%=answer_4%></a>&nbsp;&nbsp;&nbsp;<% } %><% if(answer_5){%>
+                  <a class="btn-default" id = "e"><%=answer_5%></a>&nbsp;&nbsp;&nbsp;<% } %><% if(answer_6){%>
+                    <a class="btn-default" id = "f"><%=answer_6%></a>&nbsp;&nbsp;&nbsp;<% } %>
 
+                </div>
+              </div>
+              <div id="poll-closed"></div>
+
+              <div id= "thanks-voted"></div>
+              <div id="vote-results" class="results"></div>
+              <div id="connection-count"></div>
+
+            </div>
+          </div>
+        </div>
       </div>
-      </div>
-    </div>
-  </div>
-</body>
-<script src="/socket.io/socket.io.js"></script>
-<script src="/client.js"></script>
-  <script src="/jquery.js"></script>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/client.js"></script>
+    <script src="/jquery.js"></script>
 
-</html>
+    </html>

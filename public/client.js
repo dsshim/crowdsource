@@ -15,7 +15,7 @@ socket.on('usersConnected', function (count) {
 });
 
 socket.on('closePoll', function(){
-  $("a").addClass('hidden');
+  $("#choices a").addClass('hidden');
 
   document.getElementById('poll-closed').innerText = "This Poll is Closed!"
   socket.emit("pollClosed", "closed")
@@ -66,7 +66,7 @@ for (var i = 0; i < buttons.length; i++) {
     answers = getAnswers();
     var currentUrl = window.location.pathname.substr(6)
     socket.emit('voteCast', {answer: this.innerText, currentUrl: currentUrl, answers: answers, socketId: socket.id});
-    $("a").addClass('hidden');
+    $("#choices a").addClass('hidden');
     $("#thanks-voted").append("Thanks for Voting!")
     console.log(this.innerText);
   });
@@ -98,6 +98,8 @@ $("#close").on("click", function(event) {
 })
 
 $("#add-response").on("click", function(event) {
-  $(".poll ul").append('<li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-'+count+'" value="Answer '+count+'" ></li>');
+  if(count<7){
+  $(".poll ul").append('<li>Add Response&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class = "answers" id ="answer-'+count+'" placeholder="Answer '+count+'" ></li>');
+}
   count++
 })
