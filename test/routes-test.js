@@ -1,6 +1,6 @@
 const assert = require('assert');
 const request = require('request');
-const app = require('../lib/server');
+const app = require('../app/server');
 
 
 describe('Server', function () {

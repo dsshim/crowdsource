@@ -2,11 +2,11 @@
   "name": "CrowdSource",
   "version": "0.0.1",
   "description": "Real Time Polling WebApp",
-  "main": "lib/server.js",
+  "main": "app/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --content-base public/ --progress --colors",
-    "start": "nodemon lib/server.js",
+    "start": "nodemon app/server.js",
     "postinstall": "webpack -p --config webpack.prod.config.js --profile --progress --colors"
   },
   "author": "",
