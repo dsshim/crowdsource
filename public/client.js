@@ -5,24 +5,20 @@ window.onload = function () {
   if(window.location.pathname.length > 10){
     socket.emit("setRooms", {currentUrl: window.location.pathname.substr(6)})
   }
-  // if(window.location.pathname ==="/voted"){
-  //   socket.emit("getTotalVotes", {url: document.referrer.substring(document.referrer.length-32)})
-  //   socket.emit("setRooms", {currentUrl: document.referrer.substring(document.referrer.length-32)})
-  //
-  // }
 }
 
 var connectionCount = document.getElementById('connection-count');
 
 socket.on('usersConnected', function (count) {
   connectionCount.innerText = 'Connected Users: ' + count;
+  socket.emit('newUser', count)
 });
 
 socket.on('closePoll', function(){
   $("a").addClass('hidden');
-  // $('a').disable(true);
 
   document.getElementById('poll-closed').innerText = "This Poll is Closed!"
+  socket.emit("pollClosed", "closed")
 })
 
 socket.on('voteCount', function (data) {
@@ -37,8 +33,8 @@ socket.on('voteCount', function (data) {
   for (var i = 0; i < votes.length; i++) {
     userVoteString = userVoteString +votes[i]+"</li><li>"
   }
-
   document.getElementById("vote-results").innerHTML =  userVoteString
+  socket.emit("countedVotes", votes)
 });
 
 socket.on('adminVoteCount', function (data) {
@@ -54,6 +50,7 @@ socket.on('adminVoteCount', function (data) {
     voteString = voteString +votes[i]+"</li><li>"
   }
   document.getElementById("admin-results").innerHTML =  voteString
+  socket.emit("countedAdminVotes", votes)
 });
 
 function closePoll() {
@@ -96,6 +93,7 @@ $("#submit").on("click", function(event){
 });
 
 $("#close").on("click", function(event) {
+  document.getElementById('poll-closed').innerText = "This Poll is Closed!"
   socket.emit("close", {admin_url: window.location.pathname.substr(6)})
 })
 

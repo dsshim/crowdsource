@@ -1,5 +1,5 @@
 const assert = require('assert');
-const User = require('../user.js');
+const User = require('../lib/user.js');
 
 describe('User', function() {
   describe('#create', function () {
